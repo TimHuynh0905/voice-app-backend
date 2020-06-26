@@ -1,0 +1,103 @@
+# NOTE: update this with your service name
+service: voice-app-backend
+
+# Create an optimized package for our functions 
+package:
+  individually: true
+
+plugins:
+  - serverless-bundle # Package our functions with Webpack
+  - serverless-offline
+  - serverless-dotenv-plugin # Load .env as environment variables
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: prod
+  region: us-east-1
+  
+  environment:
+    tableName: voices
+    stripeSecretKey: ${env:STRIPE_SECRET_KEY}
+    s3_audio_bucket: ${env:S3_AUDIO_BUCKET}
+    s3_transcribe_bucket: ${env:S3_TRANSCRIPTION_BUCKET}
+    LANGUAGE_CODE: en-US
+
+  # 'iamRoleStatements' defines the permission policy for the Lambda function.
+  # In this case Lambda functions are granted with permissions to access DynamoDB.
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 
+        - "arn:aws:dynamodb:us-east-1:844514465913:table/voices"
+    - Effect: Allow
+      Action: 
+        - s3:PutObject
+        - s3:GetObject
+      Resource:
+        - 'arn:aws:s3:::${self:provider.environment.s3_audio_bucket}/*'
+        - 'arn:aws:s3:::${self:provider.environment.s3_transcribe_bucket}/*'
+    - Effect: Allow
+      Action: 
+        - transcribe:StartTranscriptionJob
+      Resource: '*'
+
+resources:
+  - ${file(resources/api-gateway-errors.yml)}
+
+functions:
+  create:
+    handler: create.main
+    events:
+      - http:
+          path: voices
+          method: post
+          cors: true
+          authorizer: aws_iam
+  get:
+    handler: get.main
+    events:
+      - http:
+          path: voices/{id}
+          method: get
+          cors: true
+          authorizer: aws_iam
+  list:
+    handler: list.main
+    events:
+      - http:
+          path: voices
+          method: get
+          cors: true
+          authorizer: aws_iam
+  update:
+    handler: update.main
+    events:
+      - http:
+          path: voices/{id}
+          method: put
+          cors: true
+          authorizer: aws_iam
+  delete:
+    handler: delete.main
+    events:
+      - http:
+          path: voices/{id}
+          method: delete
+          cors: true
+          authorizer: aws_iam
+  billing:
+    handler: billing.main
+    events:
+      - http:
+          path: billing
+          method: post
+          cors: true
+          authorizer: aws_iam
