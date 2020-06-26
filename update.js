@@ -12,10 +12,10 @@ export const main = handler(async (event, context) => {
             voiceId: event.pathParameters.id
         },
 
-        UpdateExpression: "SET content = :content, attachment = :attachment",
+        UpdateExpression: "SET content = :content, isTranscribed = :isTranscribed",
         ExpressionAttributeValues : {
             ':content' : data.content || null,
-            ':attachment' : data.attachment || null,
+            ':isTranscribed' : data.isTranscribed || null,
         },
 
         ReturnValues: "ALL_NEW"

@@ -17,7 +17,7 @@ provider:
   region: us-east-1
   
   environment:
-    tableName: voices
+    tableName: voices-table-thh9501
     stripeSecretKey: ${env:STRIPE_SECRET_KEY}
     s3_audio_bucket: ${env:S3_AUDIO_BUCKET}
     s3_transcribe_bucket: ${env:S3_TRANSCRIPTION_BUCKET}
@@ -36,7 +36,7 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: 
-        - "arn:aws:dynamodb:us-east-1:844514465913:table/voices"
+        - "arn:aws:dynamodb:us-east-1:844514465913:table/voices-table-thh9501"
     - Effect: Allow
       Action: 
         - s3:PutObject
@@ -53,6 +53,22 @@ resources:
   - ${file(resources/api-gateway-errors.yml)}
 
 functions:
+  create-transcript:
+    handler: create-transcript.main
+    events:
+      - http:
+          path: transcripts
+          method: post
+          cors: true
+          authorizer: aws_iam
+  get-transcript:
+    handler: get-transcript.main
+    events:
+      - http:
+          path: transcripts/{key}
+          method: get
+          cors: true
+          authorizer: aws_iam
   create:
     handler: create.main
     events:

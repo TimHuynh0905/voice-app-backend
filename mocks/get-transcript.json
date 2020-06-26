@@ -1,0 +1,11 @@
+{
+    "pathParameters": {
+        "key": "1593138956177-Transcribe_Sample1.mp3"
+    },
+    "requestContext": {
+        "identity": {
+            "cognitoIdentityId": "us-east-1:36f4fca9-828c-469f-8111-0ae6cffe420d"
+        }
+    }
+}
+  
